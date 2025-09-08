@@ -1,13 +1,26 @@
-'''
+"""
 A simple calculator that returns words from minims.
-'''
+"""
 import itertools
 
 NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 USE_MEMO = True
 
-def decompile_string(string):
-    '''Decompiles the string into the minims calculator format.'''
+def decompile_string(string: str) -> list[str | int]:
+    """Decompiles the string into the minims calculator format.
+
+    Parameters
+    ----------
+    string : str
+        Minim string to be computed.
+
+    Returns
+    -------
+    list[str | int]
+        List of strings and integers.
+        TODO better description.
+    """
+
     separated_list = []
     current_process = ''
     for char in string:
@@ -43,7 +56,8 @@ def decompile_string(string):
     return merge_adjacent_ints(decompiled_list)
 
 def merge_adjacent_ints(decompiled_list):
-    '''Merges adjacent integers in the decompiled list.'''
+    """Merges adjacent integers in the decompiled list."""
+
     out_list = []
     i = 0
     is_int = False
@@ -71,7 +85,8 @@ def merge_adjacent_ints(decompiled_list):
     return out_list
 
 def reconstruct_minims(decompiled_list, use_memo = USE_MEMO):
-    '''Reconstructs possible words from the decompiled list.'''
+    """Reconstructs possible words from the decompiled list."""
+
     if not isinstance(decompiled_list, list):
         # Add in throwing errors
         return ''
@@ -95,8 +110,8 @@ def reconstruct_minims(decompiled_list, use_memo = USE_MEMO):
     return [''.join(word) for word in itertools.product(*possible_words)]
 
 def recursive_minim_calculate(n):
-    '''Returns all possible strings made up of n minims.'''
-    '''Can be optimised way more with memoization'''
+    """Returns all possible strings made up of n minims."""
+    
     if not n:
         return ['']
     elif n == 1:
@@ -114,7 +129,8 @@ def recursive_minim_calculate(n):
     return out_list
 
 def memo_minim_calculate(n, memo):
-    '''Returns all possible strings made up of n minims using memoization.'''
+    """Returns all possible strings made up of n minims using memoization."""
+    
     if n in memo:
         return {"memo": memo, "out": memo[n]}
     if not n:
@@ -142,7 +158,8 @@ def memo_minim_calculate(n, memo):
     return {"memo": memo, "out": out_list}
 
 def compute_minims(string):
-    '''Main function to compute minims from a string.'''
+    """Compute all possible words from the minims string."""
+    
     decompiled = decompile_string(string)
     words = reconstruct_minims(decompiled, USE_MEMO)
     return words

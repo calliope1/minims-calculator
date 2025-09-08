@@ -5,10 +5,12 @@ import server.server as server
 
 app = Flask(__name__)
 
+DATA_PATH = "data"
+MAX_N = 10
 
 @app.route('/compute', methods=['GET'])
 def compute_minims():
-    return server.return_minims(request)
+    return server.return_minims(request, DATA_PATH, MAX_N)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4999, debug=True)

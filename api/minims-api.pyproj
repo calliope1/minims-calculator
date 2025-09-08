@@ -24,12 +24,32 @@
   <ItemGroup>
     <Folder Include="compute\" />
     <Folder Include="compute\__pycache__\" />
+    <Folder Include="data\" />
     <Folder Include="server\" />
     <Folder Include="server\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="compute\__pycache__\minims_calculator.cpython-38.pyc" />
     <Content Include="compute\__pycache__\__init__.cpython-38.pyc" />
+    <Content Include="data\minims-0.json" />
+    <Content Include="data\minims-1.json" />
+    <Content Include="data\minims-10.json" />
+    <Content Include="data\minims-11.json" />
+    <Content Include="data\minims-12.json" />
+    <Content Include="data\minims-13.json" />
+    <Content Include="data\minims-14.json" />
+    <Content Include="data\minims-15.json" />
+    <Content Include="data\minims-16.json" />
+    <Content Include="data\minims-17.json" />
+    <Content Include="data\minims-18.json" />
+    <Content Include="data\minims-2.json" />
+    <Content Include="data\minims-3.json" />
+    <Content Include="data\minims-4.json" />
+    <Content Include="data\minims-5.json" />
+    <Content Include="data\minims-6.json" />
+    <Content Include="data\minims-7.json" />
+    <Content Include="data\minims-8.json" />
+    <Content Include="data\minims-9.json" />
     <Content Include="run.sh" />
     <Content Include="server\__pycache__\server.cpython-38.pyc" />
     <Content Include="server\__pycache__\__init__.cpython-38.pyc" />

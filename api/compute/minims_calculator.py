@@ -2,6 +2,8 @@
 A simple calculator that returns words from minims.
 """
 import itertools
+import json
+import os
 
 NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 USE_MEMO = True
@@ -134,6 +136,44 @@ def reconstruct_minims(decompiled_list : list[int | str], use_memo : bool = USE_
             continue
     return [''.join(word) for word in itertools.product(*possible_words)]
 
+def file_reconstruct_minims(decompiled_list : list[int | str], path : str, max_n : int) -> list[str]:
+    """Reconstructs possible words from the decompiled list, saving some memory to file.
+
+    Currently if there are non-int, non-str elements of decompiled_list then these are ignored.
+
+    Parameters
+    ----------
+    decompiled_list : list[str | int]
+        List specifying the minims and known letters of the word.
+    path : str
+        Path to files to save
+    max_n : int
+        Maximum n to be saved
+
+    Returns
+    -------
+    list[str]
+        All possible words.
+    """
+
+    if not isinstance(decompiled_list, list):
+        # TODO: Throw an error
+        return ''
+    if not decompiled_list:
+        return ''
+    possible_words = []
+    memo = {}
+    for component in decompiled_list:
+        if isinstance(component, int):
+            possible_words.append(file_minims_calculate(component, path, max_n))
+        elif isinstance(component, str):
+            possible_words.append([component])
+        else:
+            # TODO: Throw error
+            continue
+    return [''.join(word) for word in itertools.product(*possible_words)]
+
+
 def recursive_minim_calculate(n : int) -> list[str]:
     """Returns all possible strings made up of n minims without memoization."""
     
@@ -194,10 +234,71 @@ def memo_minim_calculate(n : int, memo : dict[int, list[str]]):
     out_list = ['I' + word for word in memo[n-1]]
     for letter in ['U', 'V', 'N']:
         out_list += [letter + word for word in memo[n-2]]
-    for letter in ['M']:
-        out_list += [letter + word for word in memo[n-3]]
+    out_list += ['M' + word for word in memo[n-3]]
     memo[n] = out_list
     return {"memo": memo, "out": out_list}
+
+def file_minims_calculate(n : int, path : str, max_n : int) -> list[str]:
+    """Returns all strings made of n minims, looking at files in path.
+
+    If path/minims-<n>.json exists then this reads that file and parses it as a list of strings.
+    Returns that list if successful.
+    If path/minims-<n>.json is does not exist or is malformed it computes all strings of n minims manually,
+    using other files in path.
+
+    If path/minims-<n>.json is malformed then it will be overwritten.
+
+    Parameters
+    ----------
+    n : int
+        Number of minims.
+    path : str
+        Path to the JSON files.
+    max_n : int
+        Largest n that this function will allow to save to file.
+
+    Returns
+    -------
+    list[str]
+        All strings made up of n minims.
+    """
+
+    if not isinstance(n, int):
+        # TODO: Throw error
+        print(f"Expected int for 'n' variable ({n}).")
+        return []
+
+    file_path = f"{path}//minims-{str(n)}.json"
+    out_list = []
+    # Check if path/minims-<n>.json exists
+    if os.path.exists(file_path):
+        manual_required = False
+        # Read the file to see if it is well-formed
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+
+        for item in data:
+            if not isinstance(item, str):
+                manual_required = True
+                break
+            out_list.append(item)
+        if not manual_required:
+            return out_list
+    if n == 0:
+        out_list = ['']
+    elif n == 1:
+        out_list = ['I']
+    elif n == 2:
+        out_list = ['II', 'N', 'U', 'V']
+    else:
+        out_list = ['I' + word for word in file_minims_calculate(n - 1, path, max_n)]
+        for letter in ['U', 'V', 'N']:
+            out_list += [letter + word for word in file_minims_calculate(n - 2, path, max_n)]
+        out_list += ['M' + word for word in file_minims_calculate(n - 3, path, max_n)]
+    if n <= max_n:
+        with open(file_path, 'w') as f:
+            json.dump(out_list, f, indent = 2)
+    return out_list
 
 def compute_minims(string : str) -> list[str]:
     """Compute all possible words from the minims string.
@@ -217,8 +318,43 @@ def compute_minims(string : str) -> list[str]:
     words = reconstruct_minims(decompiled, USE_MEMO)
     return words
 
+def file_compute_minims(expression : str, path : str, max_n : int):
+    """Compute all possible words from the minims string.
+
+    Saves computed minim combinations up to at most n.
+    
+    Parameters
+    ----------
+    string : str
+        Minim string to be computed
+    path : str
+        Path to JSON data files being saved
+    max_n : int
+        Maximum n for which minims-n.json will be saved
+
+    Returns
+    -------
+    list[str]
+        All strings that produce the input minim string
+    """
+
+    if max_n > 10:
+        print(f"max_n is set to {max_n}, are you sure you want to continue? This may take a lot of space.")
+        verify = "invalid_string"
+        while verify.lower() not in ["yes", "y", "no", "n", ""]:
+            verify = input("Response [Y]es/[N]o (default: No): ")
+            if verify.lower() in ["", "no", "n"]:
+                print("Ending computation, returning empty list.")
+                return []
+        print("Continuing calculation")
+        
+    
+    decompiled = decompile_string(expression)
+    words = file_reconstruct_minims(decompiled, path, max_n)
+    return words
+
 if __name__ == '__main__':
-    in_string = input('Enter a minim string: ')
-    decompiled = decompile_string(in_string)
-    words = reconstruct_minims(decompiled)
-    print(f'Possible words: {words}')
+    expression = str(input('Enter a minim string: '))
+    words = file_compute_minims(expression, '..//data', 20)
+    print(f'First 10,000 words: {words[:min(10000, len(words))]}')
+    print(f'There were {len(words)} many')

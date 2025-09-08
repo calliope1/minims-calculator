@@ -17,8 +17,7 @@ def decompile_string(string: str) -> list[str | int]:
     Returns
     -------
     list[str | int]
-        List of strings and integers.
-        TODO better description.
+        Processed list of strings and integers.
     """
 
     separated_list = []
@@ -55,9 +54,23 @@ def decompile_string(string: str) -> list[str | int]:
             decompiled_list.append(substring)
     return merge_adjacent_ints(decompiled_list)
 
-def merge_adjacent_ints(decompiled_list):
-    """Merges adjacent integers in the decompiled list."""
+def merge_adjacent_ints(decompiled_list : list) -> list:
+    """Merges adjacent integers in the decompiled list.
 
+    For example, ['a', 3, 4, ['b', 'c']] -> ['a', 7, ['b', 'c']].
+    
+    Parameters
+    ----------
+    decompiled_list : list
+
+    Returns
+    -------
+    list[int | str]
+    """
+
+    if not isinstance(decompiled_list, list):
+        # TODO: Throw an error
+        return []
     out_list = []
     i = 0
     is_int = False
@@ -66,29 +79,41 @@ def merge_adjacent_ints(decompiled_list):
         if isinstance(decompiled_list[i], int):
             if is_int:
                 running_total += decompiled_list[i]
-                i += 1
             else:
                 is_int = True
                 running_total = decompiled_list[i]
-                i += 1
         elif is_int:
             out_list.append(running_total)
             is_int = False
             running_total = 0
             out_list.append(decompiled_list[i])
-            i += 1
         else:
             out_list.append(decompiled_list[i])
-            i += 1
+        i += 1
     if running_total:
         out_list.append(running_total)
     return out_list
 
-def reconstruct_minims(decompiled_list, use_memo = USE_MEMO):
-    """Reconstructs possible words from the decompiled list."""
+def reconstruct_minims(decompiled_list : list[int | str], use_memo : bool = USE_MEMO) -> list[str]:
+    """Reconstructs possible words from the decompiled list.
+
+    Currently if there are non-int, non-str elements of decompiled_list then these are ignored.
+
+    Parameters
+    ----------
+    decompiled_list : list[str | int]
+        List specifying the minims and known letters of the word.
+    use_memo : bool
+        Specifies if we use the memoized algorithm.
+
+    Returns
+    -------
+    list[str]
+        All possible words.
+    """
 
     if not isinstance(decompiled_list, list):
-        # Add in throwing errors
+        # TODO: Throw an error
         return ''
     if not decompiled_list:
         return ''
@@ -105,12 +130,12 @@ def reconstruct_minims(decompiled_list, use_memo = USE_MEMO):
         elif isinstance(component, str):
             possible_words.append([component])
         else:
-            # throw some kind of error
+            # TODO: Throw error
             continue
     return [''.join(word) for word in itertools.product(*possible_words)]
 
-def recursive_minim_calculate(n):
-    """Returns all possible strings made up of n minims."""
+def recursive_minim_calculate(n : int) -> list[str]:
+    """Returns all possible strings made up of n minims without memoization."""
     
     if not n:
         return ['']
@@ -118,18 +143,36 @@ def recursive_minim_calculate(n):
         return ['I']
     elif n == 2:
         return ['II', 'U', 'V', 'N']
-    else:
-        out_list = ['I' + word for word in recursive_minim_calculate(n - 1)]
-        list_minus_two = recursive_minim_calculate(n - 2)
-        for letter in ['U', 'V', 'N']:
-            out_list += [letter + word for word in list_minus_two]
-        list_minus_three = recursive_minim_calculate(n - 3)
-        for letter in ['M']:
-            out_list += [letter + word for word in list_minus_three]
+
+    out_list = ['I' + word for word in recursive_minim_calculate(n - 1)]
+    
+    list_minus_two = recursive_minim_calculate(n - 2)
+    for letter in ['U', 'V', 'N']:
+        out_list += [letter + word for word in list_minus_two]
+    
+    out_list += ['M' + word for word in recursive_minim_calculate(n - 3)]
+    
     return out_list
 
-def memo_minim_calculate(n, memo):
-    """Returns all possible strings made up of n minims using memoization."""
+def memo_minim_calculate(n : int, memo : dict[int, list[str]]):
+    """Returns all possible strings made up of n minims using memoization.
+    
+    Parameters
+    ----------
+    n : int
+        Number of minims.
+    memo : dict[int, list[str]]
+        Prior calculations.
+        You MUST have that memo[n] is all possible strings made up of n minims, otherwise the result may be incorrect.
+
+    Returns
+    -------
+    {"memo": memo, "out": out_list}
+        memo : dict[int, list[str]
+            All calculations in input memo plus any new calculations.
+        out_list : list[str]
+            All strings made up of n minims.
+    """
     
     if n in memo:
         return {"memo": memo, "out": memo[n]}
@@ -142,23 +185,33 @@ def memo_minim_calculate(n, memo):
     elif n == 2:
         memo[2] = ['II', 'U', 'V', 'N']
         return {"memo": memo, "out": ['II', 'U', 'V', 'N']}
-    else:
-        # n - 1 should do it, but lets be safe
-        for k in range(3):
-            if n - 1 - k not in memo:
-                new_memo = memo_minim_calculate(n - 1 - k, memo)["memo"]
-                for key in new_memo:
-                    memo[key] = new_memo[key]
-        out_list = ['I' + word for word in memo[n-1]]
-        for letter in ['U', 'V', 'N']:
-            out_list += [letter + word for word in memo[n-2]]
-        for letter in ['M']:
-            out_list += [letter + word for word in memo[n-3]]
-        memo[n] = out_list
+    # Just n - 1 would be sufficient, but lets be safe
+    for k in range(3):
+        if n - 1 - k not in memo:
+            new_memo = memo_minim_calculate(n - 1 - k, memo)["memo"]
+            for key in new_memo:
+                memo[key] = new_memo[key]
+    out_list = ['I' + word for word in memo[n-1]]
+    for letter in ['U', 'V', 'N']:
+        out_list += [letter + word for word in memo[n-2]]
+    for letter in ['M']:
+        out_list += [letter + word for word in memo[n-3]]
+    memo[n] = out_list
     return {"memo": memo, "out": out_list}
 
-def compute_minims(string):
-    """Compute all possible words from the minims string."""
+def compute_minims(string : str) -> list[str]:
+    """Compute all possible words from the minims string.
+    
+    Parameters
+    ----------
+    string : str
+        Minim string to be computed
+
+    Returns
+    -------
+    list[str]
+        All strings that produce the input minim string
+    """
     
     decompiled = decompile_string(string)
     words = reconstruct_minims(decompiled, USE_MEMO)

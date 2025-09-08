@@ -8,7 +8,7 @@ import os
 NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 USE_MEMO = True
 
-def decompile_string(string: str) -> list[str | int]:
+def decompile_string(string: str) -> list:
     """Decompiles the string into the minims calculator format.
 
     Parameters
@@ -96,7 +96,7 @@ def merge_adjacent_ints(decompiled_list : list) -> list:
         out_list.append(running_total)
     return out_list
 
-def reconstruct_minims(decompiled_list : list[int | str], use_memo : bool = USE_MEMO) -> list[str]:
+def reconstruct_minims(decompiled_list : list, use_memo : bool = USE_MEMO) -> list:
     """Reconstructs possible words from the decompiled list.
 
     Currently if there are non-int, non-str elements of decompiled_list then these are ignored.
@@ -136,7 +136,7 @@ def reconstruct_minims(decompiled_list : list[int | str], use_memo : bool = USE_
             continue
     return [''.join(word) for word in itertools.product(*possible_words)]
 
-def file_reconstruct_minims(decompiled_list : list[int | str], path : str, max_n : int) -> list[str]:
+def file_reconstruct_minims(decompiled_list : list, path : str, max_n : int) -> list:
     """Reconstructs possible words from the decompiled list, saving some memory to file.
 
     Currently if there are non-int, non-str elements of decompiled_list then these are ignored.
@@ -174,7 +174,7 @@ def file_reconstruct_minims(decompiled_list : list[int | str], path : str, max_n
     return [''.join(word) for word in itertools.product(*possible_words)]
 
 
-def recursive_minim_calculate(n : int) -> list[str]:
+def recursive_minim_calculate(n : int) -> list:
     """Returns all possible strings made up of n minims without memoization."""
     
     if not n:
@@ -194,7 +194,7 @@ def recursive_minim_calculate(n : int) -> list[str]:
     
     return out_list
 
-def memo_minim_calculate(n : int, memo : dict[int, list[str]]):
+def memo_minim_calculate(n : int, memo : dict):
     """Returns all possible strings made up of n minims using memoization.
     
     Parameters
@@ -238,7 +238,7 @@ def memo_minim_calculate(n : int, memo : dict[int, list[str]]):
     memo[n] = out_list
     return {"memo": memo, "out": out_list}
 
-def file_minims_calculate(n : int, path : str, max_n : int) -> list[str]:
+def file_minims_calculate(n : int, path : str, max_n : int) -> list:
     """Returns all strings made of n minims, looking at files in path.
 
     If path/minims-<n>.json exists then this reads that file and parses it as a list of strings.
@@ -300,7 +300,7 @@ def file_minims_calculate(n : int, path : str, max_n : int) -> list[str]:
             json.dump(out_list, f, indent = 2)
     return out_list
 
-def compute_minims(string : str) -> list[str]:
+def compute_minims(string : str) -> list:
     """Compute all possible words from the minims string.
     
     Parameters
